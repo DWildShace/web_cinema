@@ -18,6 +18,11 @@ public class BookingSeatConfiguration : IEntityTypeConfiguration<BookingSeat>
                .WithMany(s => s.BookingSeats)
                .HasForeignKey(bs => bs.SeatId)
                .OnDelete(DeleteBehavior.Restrict);
+        // Denormalized ShowtimeId — kept in sync with Booking.ShowtimeId; needs referential integrity
+        builder.HasOne<Showtime>()
+               .WithMany()
+               .HasForeignKey(bs => bs.ShowtimeId)
+               .OnDelete(DeleteBehavior.Restrict);
 
         // Prevent double-booking: only one confirmed seat per (SeatId, ShowtimeId)
         builder.HasIndex(bs => new { bs.SeatId, bs.ShowtimeId })

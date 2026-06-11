@@ -11,7 +11,7 @@ export function FamilyConfirmPage() {
   const packageId = Number(params.get('packageId'))
   const navigate = useNavigate()
 
-  const { result, loading, suggest, countdownLabel, expired } = useSuggestSeats(showtimeId, packageId)
+  const { result, loading, suggest, countdownLabel, expired, error: suggestError } = useSuggestSeats(showtimeId, packageId)
   const [confirmError, setConfirmError] = useState<string | null>(null)
 
   useEffect(() => { suggest() }, [suggest])
@@ -34,6 +34,15 @@ export function FamilyConfirmPage() {
   if (loading) return (
     <div className="flex items-center justify-center min-h-64 p-4">
       <p className="text-lg text-gray-500">Đang tìm ghế tốt nhất cho gia đình...</p>
+    </div>
+  )
+
+  if (suggestError) return (
+    <div className="flex flex-col items-center justify-center min-h-64 p-4 gap-4">
+      <p className="text-red-600 text-lg">{suggestError}</p>
+      <button onClick={suggest} className="px-6 py-2 rounded-xl border border-gray-300 hover:bg-gray-50">
+        Thử lại
+      </button>
     </div>
   )
 

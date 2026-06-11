@@ -33,7 +33,11 @@ public class FamilyBookingController(
     {
         if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
             return Unauthorized();
-        return Ok(await bookingService.SuggestSeatsAsync(id, dto.FamilyPackageId, userId));
+        try
+        {
+            return Ok(await bookingService.SuggestSeatsAsync(id, dto.FamilyPackageId, userId));
+        }
+        catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
     }
 
     [HttpPost("api/bookings/family")]
@@ -42,7 +46,12 @@ public class FamilyBookingController(
     {
         if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
             return Unauthorized();
-        var result = await bookingService.CreateFamilyBookingAsync(userId, dto);
-        return Ok(result);
+        try
+        {
+            return Ok(await bookingService.CreateFamilyBookingAsync(userId, dto));
+        }
+        catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
+        catch (UnauthorizedAccessException) { return Forbid(); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
     }
 }

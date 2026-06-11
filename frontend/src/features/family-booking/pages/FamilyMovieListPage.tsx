@@ -6,15 +6,18 @@ import { AgeRatingBadge } from '../components/AgeRatingBadge'
 export function FamilyMovieListPage() {
   const [movies, setMovies] = useState<MovieDto[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
 
   useEffect(() => {
     getFamilyFriendlyMovies()
       .then(setMovies)
+      .catch(() => setError('Không thể tải danh sách phim. Vui lòng thử lại.'))
       .finally(() => setLoading(false))
   }, [])
 
   if (loading) return <p className="p-4 text-lg text-gray-500">Đang tải phim...</p>
+  if (error) return <p className="p-4 text-red-600">{error}</p>
 
   return (
     <div className="max-w-2xl mx-auto p-4">

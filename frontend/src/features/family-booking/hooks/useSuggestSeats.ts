@@ -4,12 +4,14 @@ import { suggestSeats, type SuggestSeatsResult } from '../../../api/familyBookin
 export function useSuggestSeats(showtimeId: number, familyPackageId: number) {
   const [result, setResult] = useState<SuggestSeatsResult | null>(null)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [secondsLeft, setSecondsLeft] = useState(0)
   const [expired, setExpired] = useState(false)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const suggest = useCallback(async () => {
     setLoading(true)
+    setError(null)
     try {
       const data = await suggestSeats(showtimeId, familyPackageId)
       setResult(data)
@@ -32,6 +34,8 @@ export function useSuggestSeats(showtimeId: number, familyPackageId: number) {
           return s - 1
         })
       }, 1000)
+    } catch {
+      setError('Không thể tải ghế. Vui lòng thử lại.')
     } finally {
       setLoading(false)
     }
@@ -45,5 +49,5 @@ export function useSuggestSeats(showtimeId: number, familyPackageId: number) {
     ? 'Phiên đặt vé đã hết hạn, vui lòng thử lại'
     : `Ghế được giữ trong ${Math.floor(secondsLeft / 60)}:${String(secondsLeft % 60).padStart(2, '0')}`
 
-  return { result, loading, suggest, countdownLabel, expired }
+  return { result, loading, suggest, countdownLabel, expired, error }
 }
