@@ -1,0 +1,21 @@
+# Environment / secrets
+.env
+frontend/.env.local
+backend/**/appsettings.Development.json
+backend/**/appsettings.Production.json
+
+# .NET
+backend/**/bin/
+backend/**/obj/
+backend/**/*.user
+backend/.vs/
+
+# Node / Bun
+frontend/node_modules/
+frontend/.bun/
+frontend/dist/
+frontend/.vite/
+
+# OS
+.DS_Store
+Thumbs.db

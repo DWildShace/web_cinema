@@ -1,0 +1,10 @@
+using CinemaBooking.BLL.DTOs;
+
+namespace CinemaBooking.BLL.Services.Interfaces;
+
+public interface IBookingService
+{
+    Task<IEnumerable<BookingDto>> GetUserBookingsAsync(int userId);
+    Task<BookingDto?> GetByIdAsync(int id);
+    Task<BookingDto> CreateAsync(int userId, CreateBookingDto dto);
+}

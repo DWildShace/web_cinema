@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="CinemaBooking.API/CinemaBooking.API.csproj" />
+  <Project Path="CinemaBooking.BLL/CinemaBooking.BLL.csproj" />
+  <Project Path="CinemaBooking.DAL/CinemaBooking.DAL.csproj" />
+  <Project Path="CinemaBooking.Domain/CinemaBooking.Domain.csproj" />
+  <Project Path="CinemaBooking.Tests/CinemaBooking.Tests.csproj" />
+</Solution>

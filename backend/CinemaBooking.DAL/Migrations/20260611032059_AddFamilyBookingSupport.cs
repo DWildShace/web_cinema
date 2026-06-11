@@ -1,0 +1,82 @@
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+
+#nullable disable
+
+namespace CinemaBooking.DAL.Migrations
+{
+    /// <inheritdoc />
+    public partial class AddFamilyBookingSupport : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.AddColumn<string>(
+                name: "AgeRating",
+                table: "Movies",
+                type: "character varying(5)",
+                maxLength: 5,
+                nullable: false,
+                defaultValue: "");
+
+            migrationBuilder.AddColumn<int>(
+                name: "FamilyPackageId",
+                table: "Bookings",
+                type: "integer",
+                nullable: true);
+
+            migrationBuilder.CreateTable(
+                name: "FamilyPackages",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    AdultCount = table.Column<int>(type: "integer", nullable: false),
+                    ChildCount = table.Column<int>(type: "integer", nullable: false),
+                    DiscountPct = table.Column<decimal>(type: "numeric(5,4)", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FamilyPackages", x => x.Id);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Bookings_FamilyPackageId",
+                table: "Bookings",
+                column: "FamilyPackageId");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Bookings_FamilyPackages_FamilyPackageId",
+                table: "Bookings",
+                column: "FamilyPackageId",
+                principalTable: "FamilyPackages",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.SetNull);
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropForeignKey(
+                name: "FK_Bookings_FamilyPackages_FamilyPackageId",
+                table: "Bookings");
+
+            migrationBuilder.DropTable(
+                name: "FamilyPackages");
+
+            migrationBuilder.DropIndex(
+                name: "IX_Bookings_FamilyPackageId",
+                table: "Bookings");
+
+            migrationBuilder.DropColumn(
+                name: "AgeRating",
+                table: "Movies");
+
+            migrationBuilder.DropColumn(
+                name: "FamilyPackageId",
+                table: "Bookings");
+        }
+    }
+}
