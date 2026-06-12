@@ -69,6 +69,10 @@ public class SeatSuggestionService(
         foreach (var seats in byRow.Values)
         {
             var run = new List<Seat> { seats[0] };
+            // Check initial run immediately — handles n=1 and single-seat rows
+            if (run.Count >= n)
+                result.Add(run.TakeLast(n).ToList());
+
             for (int i = 1; i < seats.Count; i++)
             {
                 if (seats[i].Column == seats[i - 1].Column + 1)
@@ -92,16 +96,40 @@ public class SeatSuggestionService(
             int r1 = sortedRows[i], r2 = sortedRows[i + 1];
             if (r2 != r1 + 1) continue;
 
-            var row1 = byRow[r1];
-            var row2 = byRow[r2];
+            // Use actual contiguous runs within each row, not just the first N seats
+            var runs1 = GetContiguousRuns(byRow[r1]);
+            var runs2 = GetContiguousRuns(byRow[r2]);
 
             for (int split = 1; split < n; split++)
             {
-                if (row1.Count >= split && row2.Count >= n - split)
-                    return [.. row1.Take(split), .. row2.Take(n - split)];
+                var g1 = runs1.FirstOrDefault(g => g.Count >= split);
+                var g2 = runs2.FirstOrDefault(g => g.Count >= n - split);
+                if (g1 is not null && g2 is not null)
+                    return [.. g1.Take(split), .. g2.Take(n - split)];
             }
         }
         return null;
+    }
+
+    // Returns all contiguous runs within a row (seats already sorted by column)
+    private static List<List<Seat>> GetContiguousRuns(List<Seat> seats)
+    {
+        var runs = new List<List<Seat>>();
+        if (seats.Count == 0) return runs;
+
+        var current = new List<Seat> { seats[0] };
+        for (int i = 1; i < seats.Count; i++)
+        {
+            if (seats[i].Column == seats[i - 1].Column + 1)
+                current.Add(seats[i]);
+            else
+            {
+                runs.Add(current);
+                current = [seats[i]];
+            }
+        }
+        runs.Add(current);
+        return runs;
     }
 
     private static List<Seat> ScoreAndSelect(
@@ -112,7 +140,8 @@ public class SeatSuggestionService(
             float rowRatio = (float)group[0].Row / totalRows;
             int rowScore = rowRatio is >= 0.3f and <= 0.6f ? 30 : 0;
 
-            float colRatio = (float)(group.Sum(s => s.Column) / group.Count) / totalColumns;
+            // Cast before dividing to avoid int/int truncation
+            float colRatio = (float)group.Sum(s => s.Column) / group.Count / totalColumns;
             int colScore = colRatio is >= 0.2f and <= 0.8f ? 20 : 0;
 
             int wallScore = group[0].Column > 1 && group[^1].Column < totalColumns ? 10 : 0;

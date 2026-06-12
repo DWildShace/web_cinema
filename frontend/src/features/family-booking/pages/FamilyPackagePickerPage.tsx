@@ -5,12 +5,9 @@ import { useFamilyPackages } from '../hooks/useFamilyPackages'
 
 export function FamilyPackagePickerPage() {
   const [searchParams] = useSearchParams()
-  // movieId preserved in URL for future showtime picker; not used until showtimes flow is built
-  void searchParams.get('movieId')
+  const showtimeId = Number(searchParams.get('showtimeId')) || 0
   const [selectedPackageId, setSelectedPackageId] = useState<number | null>(null)
-  // TODO: add showtime selector — hardcoded to 1 until showtimes flow is built
-  const showtimeId = 1
-  const { packages, loading, error } = useFamilyPackages(showtimeId)
+  const { packages, loading, error } = useFamilyPackages(showtimeId || null)
   const navigate = useNavigate()
 
   if (loading) return <p className="p-4 text-lg text-gray-500">Đang tải gói...</p>
@@ -35,8 +32,13 @@ export function FamilyPackagePickerPage() {
           />
         ))}
       </div>
+      {showtimeId === 0 && (
+        <p className="mt-4 text-center text-sm text-amber-700 bg-amber-50 rounded-xl p-3">
+          Chức năng chọn suất chiếu đang được phát triển. Vui lòng quay lại sau.
+        </p>
+      )}
       <button
-        disabled={!selectedPackageId}
+        disabled={!selectedPackageId || showtimeId === 0}
         onClick={() => navigate(`/family-booking/confirm?showtimeId=${showtimeId}&packageId=${selectedPackageId}`)}
         className="mt-6 w-full py-4 rounded-xl bg-blue-600 text-white text-xl font-bold disabled:opacity-40 hover:bg-blue-700 transition-colors"
       >

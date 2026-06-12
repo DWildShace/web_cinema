@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { createFamilyBooking } from '../../../api/familyBooking'
@@ -26,8 +27,18 @@ export function FamilyConfirmPage() {
         seatIds: result.seats.map(s => s.id),
       })
       navigate('/booking-success')
-    } catch {
-      setConfirmError('Đặt vé thất bại. Ghế có thể đã được người khác đặt. Vui lòng thử lại.')
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        if (err.response?.status === 403) {
+          setConfirmError('Phiên đặt vé đã hết hạn. Vui lòng bấm "Đổi vị trí khác" để yêu cầu ghế mới.')
+        } else if (err.response?.status === 409) {
+          setConfirmError('Ghế vừa được đặt bởi người khác. Vui lòng bấm "Đổi vị trí khác" để chọn lại.')
+        } else {
+          setConfirmError('Đặt vé thất bại. Vui lòng thử lại.')
+        }
+      } else {
+        setConfirmError('Đặt vé thất bại. Vui lòng thử lại.')
+      }
     }
   }
 

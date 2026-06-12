@@ -14,24 +14,36 @@ public class SeatExpiryService(IServiceScopeFactory scopeFactory) : BackgroundSe
             using var scope = scopeFactory.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
+            // ExpiresAt == null means "no expiry set" — treat as expired to prevent permanent seat locks
             var expired = await context.BookingSeats
                 .Where(bs => bs.Status == SeatStatus.Pending
-                    && bs.ExpiresAt != null
-                    && bs.ExpiresAt < DateTime.UtcNow)
+                    && (bs.ExpiresAt == null || bs.ExpiresAt < DateTime.UtcNow))
                 .ToListAsync(stoppingToken);
 
             if (expired.Count == 0) continue;
 
             var bookingIds = expired.Select(bs => bs.BookingId).Distinct().ToList();
-            context.BookingSeats.RemoveRange(expired);
-            await context.SaveChangesAsync(stoppingToken); // flush seat deletions first
 
-            // Now query: bookings whose seats are all gone
-            var emptyBookings = await context.Bookings
-                .Where(b => bookingIds.Contains(b.Id) && !b.BookingSeats.Any())
-                .ToListAsync(stoppingToken);
-            context.Bookings.RemoveRange(emptyBookings);
-            await context.SaveChangesAsync(stoppingToken);
+            await using var tx = await context.Database.BeginTransactionAsync(stoppingToken);
+            try
+            {
+                context.BookingSeats.RemoveRange(expired);
+                await context.SaveChangesAsync(stoppingToken);
+
+                // Delete bookings that now have no seats left
+                var emptyBookings = await context.Bookings
+                    .Where(b => bookingIds.Contains(b.Id) && !b.BookingSeats.Any())
+                    .ToListAsync(stoppingToken);
+                context.Bookings.RemoveRange(emptyBookings);
+                await context.SaveChangesAsync(stoppingToken);
+
+                await tx.CommitAsync(stoppingToken);
+            }
+            catch
+            {
+                await tx.RollbackAsync(stoppingToken);
+                throw;
+            }
         }
     }
 }

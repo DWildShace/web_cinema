@@ -2,6 +2,7 @@ using CinemaBooking.DAL.Repositories.Interfaces;
 using CinemaBooking.Domain.Entities;
 using CinemaBooking.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace CinemaBooking.DAL.Repositories;
 
@@ -28,7 +29,8 @@ public class BookingRepository(AppDbContext context) : BaseRepository<Booking>(c
             .Where(b => b.UserId == userId
                 && b.ShowtimeId == showtimeId
                 && b.FamilyPackageId == familyPackageId
-                // Use !Any(negative) instead of All(positive) for reliable SQL translation
+                // Must have seats AND none of them are non-Pending or expired
+                && b.BookingSeats.Any()
                 && !b.BookingSeats.Any(bs =>
                     bs.Status != SeatStatus.Pending
                     || (bs.ExpiresAt != null && bs.ExpiresAt <= DateTime.UtcNow)))
@@ -42,5 +44,27 @@ public class BookingRepository(AppDbContext context) : BaseRepository<Booking>(c
                 && ids.Contains(bs.SeatId)
                 && bs.Status == SeatStatus.Confirmed)
             .AnyAsync();
+    }
+
+    public Task<IDbContextTransaction> BeginTransactionAsync() =>
+        _context.Database.BeginTransactionAsync();
+
+    // Catches DB-level unique constraint violations (e.g. seat double-booking) and converts to
+    // InvalidOperationException so the controller can return 409 instead of 500.
+    public override async Task SaveChangesAsync()
+    {
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex)
+            when (ex.InnerException?.Message.Contains("IX_BookingSeats_SeatId_ShowtimeId",
+                      StringComparison.OrdinalIgnoreCase) == true
+                  || ex.InnerException?.Message.Contains("unique",
+                      StringComparison.OrdinalIgnoreCase) == true)
+        {
+            throw new InvalidOperationException(
+                "Ghế vừa được đặt bởi người khác. Vui lòng thử lại.", ex);
+        }
     }
 }

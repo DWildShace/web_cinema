@@ -71,49 +71,59 @@ public class FamilyBookingService(
         if (seatIds.Count != package.AdultCount + package.ChildCount)
             throw new InvalidOperationException("Seat count does not match package.");
 
-        // Verify caller owns a pending suggestion covering exactly these seats
-        var pending = await bookingRepo.GetActivePendingAsync(userId, dto.ShowtimeId, dto.FamilyPackageId);
-        var tempBooking = pending.FirstOrDefault(b =>
-            b.BookingSeats.Select(bs => bs.SeatId).ToHashSet().SetEquals(seatIds));
-
-        if (tempBooking is null)
-            throw new UnauthorizedAccessException(
-                "No valid pending suggestion found for these seats. Request a new suggestion.");
-
-        // Runtime double-booking guard (belt-and-suspenders; DB unique index is the real fence)
-        if (await bookingRepo.AnyConfirmedForSeatsAsync(dto.ShowtimeId, seatIds))
-            throw new InvalidOperationException("One or more seats were just taken. Please try again.");
-
-        bookingRepo.Remove(tempBooking);
-
-        var ticketCode = "FAM-" + Guid.NewGuid().ToString("N")[..8].ToUpper();
-        var booking = new Booking
+        await using var tx = await bookingRepo.BeginTransactionAsync();
+        try
         {
-            UserId = userId,
-            ShowtimeId = dto.ShowtimeId,
-            FamilyPackageId = dto.FamilyPackageId,
-            TicketCode = ticketCode,
-            BookingSeats = seatIds.Select(seatId => new BookingSeat
+            // Verify caller owns a pending suggestion covering exactly these seats
+            var pending = await bookingRepo.GetActivePendingAsync(userId, dto.ShowtimeId, dto.FamilyPackageId);
+            var tempBooking = pending.FirstOrDefault(b =>
+                b.BookingSeats.Select(bs => bs.SeatId).ToHashSet().SetEquals(seatIds));
+
+            if (tempBooking is null)
+                throw new UnauthorizedAccessException(
+                    "No valid pending suggestion found for these seats. Request a new suggestion.");
+
+            // Runtime double-booking guard (belt-and-suspenders; DB unique index is the real fence)
+            if (await bookingRepo.AnyConfirmedForSeatsAsync(dto.ShowtimeId, seatIds))
+                throw new InvalidOperationException("Ghế vừa được đặt bởi người khác. Vui lòng thử lại.");
+
+            bookingRepo.Remove(tempBooking);
+
+            var ticketCode = "FAM-" + Guid.NewGuid().ToString("N")[..8].ToUpper();
+            var booking = new Booking
             {
-                SeatId = seatId,
+                UserId = userId,
                 ShowtimeId = dto.ShowtimeId,
-                Status = SeatStatus.Confirmed
-            }).ToList()
-        };
+                FamilyPackageId = dto.FamilyPackageId,
+                TicketCode = ticketCode,
+                BookingSeats = seatIds.Select(seatId => new BookingSeat
+                {
+                    SeatId = seatId,
+                    ShowtimeId = dto.ShowtimeId,
+                    Status = SeatStatus.Confirmed
+                }).ToList()
+            };
 
-        await bookingRepo.AddAsync(booking);
-        await bookingRepo.SaveChangesAsync();
+            await bookingRepo.AddAsync(booking);
+            await bookingRepo.SaveChangesAsync(); // throws InvalidOperationException on unique violation
+            await tx.CommitAsync();
 
-        var full = await bookingRepo.GetWithSeatsAsync(booking.Id);
-        return new BookingDto(
-            full!.Id,
-            full.TicketCode,
-            full.ShowtimeId,
-            full.Showtime?.Movie?.Title ?? string.Empty,
-            full.Showtime?.StartsAt ?? DateTime.MinValue,
-            full.BookingSeats.Select(bs => new BookingSeatDto(
-                bs.SeatId, bs.Seat?.Row ?? 0, bs.Seat?.Column ?? 0,
-                bs.Seat?.Type.ToString() ?? string.Empty,
-                bs.Status.ToString())));
+            var full = await bookingRepo.GetWithSeatsAsync(booking.Id);
+            return new BookingDto(
+                full!.Id,
+                full.TicketCode,
+                full.ShowtimeId,
+                full.Showtime?.Movie?.Title ?? string.Empty,
+                full.Showtime?.StartsAt ?? DateTime.MinValue,
+                full.BookingSeats.Select(bs => new BookingSeatDto(
+                    bs.SeatId, bs.Seat?.Row ?? 0, bs.Seat?.Column ?? 0,
+                    bs.Seat?.Type.ToString() ?? string.Empty,
+                    bs.Status.ToString())));
+        }
+        catch
+        {
+            await tx.RollbackAsync();
+            throw;
+        }
     }
 }

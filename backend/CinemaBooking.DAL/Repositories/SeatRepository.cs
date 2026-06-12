@@ -9,28 +9,29 @@ public class SeatRepository(AppDbContext context) : BaseRepository<Seat>(context
 {
     public async Task<IEnumerable<Seat>> GetAvailableByShowtimeAsync(int showtimeId)
     {
-        var takenSeatIds = await _context.BookingSeats
-            .Where(bs => bs.ShowtimeId == showtimeId
-                && (bs.Status == SeatStatus.Confirmed
-                    || (bs.Status == SeatStatus.Pending
-                        && (bs.ExpiresAt == null || bs.ExpiresAt > DateTime.UtcNow))))
-            .Select(bs => bs.SeatId)
-            .ToListAsync();
-
-        var hallId = await _context.Showtimes
-            .Where(s => s.Id == showtimeId)
-            .Select(s => s.HallId)
-            .FirstAsync();
-
-        return await _context.Seats
-            .Where(s => s.HallId == hallId && !takenSeatIds.Contains(s.Id))
-            .OrderBy(s => s.Row).ThenBy(s => s.Column)
-            .ToListAsync();
+        var now = DateTime.UtcNow;
+        // Single atomic query: JOIN Seats→Showtimes for hall filter + NOT EXISTS for taken seats
+        return await (
+            from s in _context.Seats
+            join st in _context.Showtimes on s.HallId equals st.HallId
+            where st.Id == showtimeId
+                && !_context.BookingSeats.Any(bs =>
+                    bs.SeatId == s.Id
+                    && bs.ShowtimeId == showtimeId
+                    && (bs.Status == SeatStatus.Confirmed
+                        || (bs.Status == SeatStatus.Pending
+                            && (bs.ExpiresAt == null || bs.ExpiresAt > now))))
+            orderby s.Row, s.Column
+            select s
+        ).ToListAsync();
     }
 
-    public async Task<Hall> GetHallByShowtimeAsync(int showtimeId) =>
-        await _context.Showtimes
+    public async Task<Hall> GetHallByShowtimeAsync(int showtimeId)
+    {
+        var hall = await _context.Showtimes
             .Where(s => s.Id == showtimeId)
             .Select(s => s.Hall)
-            .FirstAsync();
+            .FirstOrDefaultAsync();
+        return hall ?? throw new KeyNotFoundException($"Showtime {showtimeId} not found.");
+    }
 }
