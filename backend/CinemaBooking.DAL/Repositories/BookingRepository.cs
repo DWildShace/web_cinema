@@ -11,7 +11,8 @@ public class BookingRepository(AppDbContext context) : BaseRepository<Booking>(c
     public async Task<IEnumerable<Booking>> GetByUserIdAsync(int userId) =>
         await _dbSet.Where(b => b.UserId == userId)
             .Include(b => b.Showtime).ThenInclude(s => s.Movie)
-            .Include(b => b.BookingSeats)
+            .Include(b => b.BookingSeats).ThenInclude(bs => bs.Seat)
+            .OrderByDescending(b => b.CreatedAt)
             .ToListAsync();
 
     public async Task<Booking?> GetByTicketCodeAsync(string ticketCode) =>

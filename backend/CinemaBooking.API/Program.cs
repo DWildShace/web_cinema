@@ -1,4 +1,5 @@
 using System.Text;
+using CinemaBooking.API;
 using CinemaBooking.API.BackgroundServices;
 using CinemaBooking.BLL.Services;
 using CinemaBooking.BLL.Services.Interfaces;
@@ -47,12 +48,16 @@ builder.Services.AddScoped<IFamilyPackageRepository, FamilyPackageRepository>();
 builder.Services.AddScoped<ISeatRepository, SeatRepository>();
 builder.Services.AddScoped<IShowtimeRepository, ShowtimeRepository>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 // BLL services
 builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<ISeatSuggestionService, SeatSuggestionService>();
 builder.Services.AddScoped<IFamilyPackageService, FamilyPackageService>();
 builder.Services.AddScoped<IFamilyBookingService, FamilyBookingService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IShowtimeService, ShowtimeService>();
+builder.Services.AddScoped<IBookingService, BookingService>();
 
 // Background service
 builder.Services.AddHostedService<SeatExpiryService>();
@@ -69,6 +74,14 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod()));
 
 var app = builder.Build();
+
+// Seed database
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.MigrateAsync();
+    await DbInitializer.SeedAsync(db);
+}
 
 app.UseSwagger();
 app.UseSwaggerUI();

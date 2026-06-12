@@ -29,7 +29,7 @@ export function FamilyMovieListPage() {
         {movies.map(m => (
           <button
             key={m.id}
-            onClick={() => navigate(`/family-booking/packages?movieId=${m.id}`)}
+            onClick={() => navigate(`/family-booking/showtimes?movieId=${m.id}`)}
             className="flex gap-4 rounded-xl border border-gray-200 p-4 text-left hover:border-blue-400 transition-colors"
           >
             <img

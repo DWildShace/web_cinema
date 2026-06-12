@@ -7,7 +7,11 @@ namespace CinemaBooking.DAL.Repositories;
 public class ShowtimeRepository(AppDbContext context) : BaseRepository<Showtime>(context), IShowtimeRepository
 {
     public async Task<IEnumerable<Showtime>> GetByMovieIdAsync(int movieId) =>
-        await _dbSet.Where(s => s.MovieId == movieId).Include(s => s.Hall).ToListAsync();
+        await _dbSet.Where(s => s.MovieId == movieId)
+            .Include(s => s.Movie)
+            .Include(s => s.Hall).ThenInclude(h => h.Cinema)
+            .OrderBy(s => s.StartsAt)
+            .ToListAsync();
 
     public async Task<Showtime?> GetWithDetailsAsync(int id) =>
         await _dbSet

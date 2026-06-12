@@ -8,4 +8,5 @@ public interface IShowtimeService
     Task<ShowtimeDto?> GetByIdAsync(int id);
     Task<ShowtimeDto> CreateAsync(CreateShowtimeDto dto);
     Task<bool> DeleteAsync(int id);
+    Task<IEnumerable<SeatWithStatusDto>> GetSeatsWithStatusAsync(int showtimeId);
 }
