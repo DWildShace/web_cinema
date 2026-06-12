@@ -1,6 +1,5 @@
 using System.Text;
 using CinemaBooking.API.BackgroundServices;
-using CinemaBooking.BLL.Mappings;
 using CinemaBooking.BLL.Services;
 using CinemaBooking.BLL.Services.Interfaces;
 using CinemaBooking.DAL;
@@ -23,9 +22,6 @@ builder.Services.AddControllers();
 // Database
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
-
-// AutoMapper
-builder.Services.AddAutoMapper(cfg => cfg.AddMaps(typeof(MovieProfile).Assembly));
 
 // JWT
 var jwtSection = builder.Configuration.GetSection("Jwt");

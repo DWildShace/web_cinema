@@ -1,4 +1,3 @@
-using AutoMapper;
 using CinemaBooking.BLL.DTOs;
 using CinemaBooking.BLL.Services.Interfaces;
 using CinemaBooking.DAL.Repositories.Interfaces;
@@ -6,26 +5,33 @@ using CinemaBooking.Domain.Entities;
 
 namespace CinemaBooking.BLL.Services;
 
-public class MovieService(IMovieRepository repo, IMapper mapper) : IMovieService
+public class MovieService(IMovieRepository repo) : IMovieService
 {
     public async Task<IEnumerable<MovieDto>> GetAllAsync()
     {
         var movies = await repo.GetAllAsync();
-        return mapper.Map<IEnumerable<MovieDto>>(movies);
+        return movies.Select(ToDto);
     }
 
     public async Task<MovieDto?> GetByIdAsync(int id)
     {
         var movie = await repo.GetByIdAsync(id);
-        return movie is null ? null : mapper.Map<MovieDto>(movie);
+        return movie is null ? null : ToDto(movie);
     }
 
     public async Task<MovieDto> CreateAsync(CreateMovieDto dto)
     {
-        var movie = mapper.Map<Movie>(dto);
+        var movie = new Movie
+        {
+            Title = dto.Title,
+            Genre = dto.Genre,
+            Duration = dto.Duration,
+            PosterUrl = dto.PosterUrl,
+            Rating = dto.Rating
+        };
         await repo.AddAsync(movie);
         await repo.SaveChangesAsync();
-        return mapper.Map<MovieDto>(movie);
+        return ToDto(movie);
     }
 
     public async Task<MovieDto?> UpdateAsync(int id, UpdateMovieDto dto)
@@ -41,7 +47,7 @@ public class MovieService(IMovieRepository repo, IMapper mapper) : IMovieService
 
         repo.Update(movie);
         await repo.SaveChangesAsync();
-        return mapper.Map<MovieDto>(movie);
+        return ToDto(movie);
     }
 
     public async Task<bool> DeleteAsync(int id)
@@ -52,4 +58,7 @@ public class MovieService(IMovieRepository repo, IMapper mapper) : IMovieService
         await repo.SaveChangesAsync();
         return true;
     }
+
+    private static MovieDto ToDto(Movie m) =>
+        new(m.Id, m.Title, m.Genre, m.Duration, m.PosterUrl, m.Rating, m.AgeRating.ToString());
 }
