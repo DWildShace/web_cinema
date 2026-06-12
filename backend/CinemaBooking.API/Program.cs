@@ -80,7 +80,7 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.MigrateAsync();
-    await DbInitializer.SeedAsync(db);
+    await DbInitializer.SeedAsync(db, app.Environment);
 }
 
 app.UseSwagger();

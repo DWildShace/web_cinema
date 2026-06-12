@@ -7,7 +7,7 @@ namespace CinemaBooking.API;
 
 public static class DbInitializer
 {
-    public static async Task SeedAsync(AppDbContext db)
+    public static async Task SeedAsync(AppDbContext db, IWebHostEnvironment env)
     {
         if (await db.Movies.AnyAsync()) return;
 
@@ -92,13 +92,16 @@ public static class DbInitializer
         await db.FamilyPackages.AddRangeAsync(packages);
         await db.SaveChangesAsync();
 
-        // ── Users ────────────────────────────────────────────────────────
-        var users = new List<User>
+        // ── Dev-only seed users (never in production) ────────────────────
+        if (env.IsDevelopment() && !await db.Users.AnyAsync())
         {
-            new() { Email = "admin@cinema.vn",    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),    Role = UserRole.Admin },
-            new() { Email = "user@cinema.vn",     PasswordHash = BCrypt.Net.BCrypt.HashPassword("User@123"),     Role = UserRole.Customer },
-        };
-        await db.Users.AddRangeAsync(users);
-        await db.SaveChangesAsync();
+            var users = new List<User>
+            {
+                new() { Email = "admin@cinema.vn", PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),  Role = UserRole.Admin },
+                new() { Email = "user@cinema.vn",  PasswordHash = BCrypt.Net.BCrypt.HashPassword("User@123"),   Role = UserRole.Customer },
+            };
+            await db.Users.AddRangeAsync(users);
+            await db.SaveChangesAsync();
+        }
     }
 }
