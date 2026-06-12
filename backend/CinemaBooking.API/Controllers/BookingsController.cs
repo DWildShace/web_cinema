@@ -25,7 +25,7 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
         if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
             return Unauthorized();
 
-        var booking = await bookingService.GetByIdAsync(id);
+        var booking = await bookingService.GetByIdAsync(userId, id);
         if (booking is null) return NotFound();
         return Ok(booking);
     }

@@ -17,10 +17,11 @@ public class BookingService(
         return bookings.Select(ToDto);
     }
 
-    public async Task<BookingDto?> GetByIdAsync(int id)
+    public async Task<BookingDto?> GetByIdAsync(int userId, int id)
     {
         var booking = await bookingRepo.GetWithSeatsAsync(id);
-        return booking is null ? null : ToDto(booking);
+        if (booking is null || booking.UserId != userId) return null;
+        return ToDto(booking);
     }
 
     public async Task<BookingDto> CreateAsync(int userId, CreateBookingDto dto)
