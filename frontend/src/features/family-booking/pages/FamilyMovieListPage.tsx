@@ -56,7 +56,7 @@ export function FamilyMovieListPage() {
             <div className="flex-1 min-w-0 py-0.5">
               <div className="flex items-center gap-2 mb-1.5">
                 <AgeRating rating={m.ageRating} />
-                <span className="text-[10px] text-yellow-400">★ {m.rating}</span>
+                <span className="text-[10px] text-yellow-400">★ {m.rating.toFixed(1)}</span>
               </div>
               <h2 className="font-bold text-zinc-100 leading-tight">{m.title}</h2>
               <p className="text-xs text-zinc-500 mt-1">{m.genre} · {m.duration} phút</p>

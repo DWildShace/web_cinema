@@ -69,25 +69,19 @@ public class FamilyBookingService(
             ?? throw new KeyNotFoundException($"FamilyPackage {dto.FamilyPackageId} not found.");
 
         if (seatIds.Count != package.AdultCount + package.ChildCount)
-            throw new InvalidOperationException("Seat count does not match package.");
+            throw new InvalidOperationException($"Cần chọn đúng {package.AdultCount + package.ChildCount} ghế cho gói này.");
 
         await using var tx = await bookingRepo.BeginTransactionAsync();
         try
         {
-            // Verify caller owns a pending suggestion covering exactly these seats
-            var pending = await bookingRepo.GetActivePendingAsync(userId, dto.ShowtimeId, dto.FamilyPackageId);
-            var tempBooking = pending.FirstOrDefault(b =>
-                b.BookingSeats.Select(bs => bs.SeatId).ToHashSet().SetEquals(seatIds));
-
-            if (tempBooking is null)
-                throw new UnauthorizedAccessException(
-                    "No valid pending suggestion found for these seats. Request a new suggestion.");
-
-            // Runtime double-booking guard (belt-and-suspenders; DB unique index is the real fence)
+            // Runtime double-booking guard (DB unique index is the real fence)
             if (await bookingRepo.AnyConfirmedForSeatsAsync(dto.ShowtimeId, seatIds))
-                throw new InvalidOperationException("Ghế vừa được đặt bởi người khác. Vui lòng thử lại.");
+                throw new InvalidOperationException("Một hoặc nhiều ghế vừa được đặt bởi người khác. Vui lòng chọn lại.");
 
-            bookingRepo.Remove(tempBooking);
+            // Clean up any pending suggestions this user had for this showtime+package
+            var pending = await bookingRepo.GetActivePendingAsync(userId, dto.ShowtimeId, dto.FamilyPackageId);
+            foreach (var old in pending)
+                bookingRepo.Remove(old);
 
             var ticketCode = "FAM-" + Guid.NewGuid().ToString("N")[..8].ToUpper();
             var booking = new Booking

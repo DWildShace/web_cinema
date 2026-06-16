@@ -75,7 +75,14 @@ export function FamilyPackagePickerPage() {
 
       <button
         disabled={!selectedPackageId || showtimeId === 0}
-        onClick={() => navigate(`/family/confirm?showtimeId=${showtimeId}&packageId=${selectedPackageId}`)}
+        onClick={() => {
+          const pkg = packages.find(p => p.id === selectedPackageId)!
+          const sc = pkg.adultCount + pkg.childCount
+          navigate(
+            `/family/confirm?showtimeId=${showtimeId}&packageId=${selectedPackageId}` +
+            `&seatCount=${sc}&totalPrice=${pkg.totalPrice}&packageName=${encodeURIComponent(pkg.name)}`
+          )
+        }}
         className="w-full py-4 rounded-2xl bg-green-500 text-zinc-950 font-bold text-base disabled:opacity-30 active:scale-95 transition-all"
       >
         Tiếp tục
