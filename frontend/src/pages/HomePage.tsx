@@ -39,9 +39,9 @@ export function HomePage() {
       </div>
 
       {/* ── 2 lối vào ── */}
-      <div className="px-4 -mt-3 flex gap-3 mb-6">
+      <div className="px-4 mt-3 flex gap-3 mb-6">
         <Link
-          to="/movies"
+          to={hero ? `/movies/${hero.id}` : '/movies'}
           className="flex-1 py-3.5 rounded-2xl bg-green-500 text-zinc-950 font-bold text-center text-sm active:scale-95 transition-transform"
         >
           🎟 Đặt vé ngay
@@ -78,7 +78,7 @@ export function HomePage() {
                 </span>
               </div>
               <p className="mt-1.5 text-xs text-zinc-300 font-medium line-clamp-2 leading-tight">{m.title}</p>
-              <p className="text-[10px] text-yellow-400 mt-0.5">★ {m.rating}</p>
+              <p className="text-[10px] text-yellow-400 mt-0.5">★ {m.rating.toFixed(1)}</p>
             </Link>
           ))}
         </div>

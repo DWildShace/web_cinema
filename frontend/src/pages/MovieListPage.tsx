@@ -52,7 +52,7 @@ export function MovieListPage() {
               </span>
               <div className="absolute bottom-0 left-0 right-0 p-2">
                 <p className="text-white text-xs font-semibold line-clamp-2 leading-tight">{m.title}</p>
-                <p className="text-yellow-400 text-[10px] mt-0.5">★ {m.rating} · {m.duration}p</p>
+                <p className="text-yellow-400 text-[10px] mt-0.5">★ {m.rating.toFixed(1)} · {m.duration}p</p>
               </div>
             </div>
           </Link>

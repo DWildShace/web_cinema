@@ -77,7 +77,7 @@ export function SeatPickerPage() {
   const totalPrice = selected.size * Number(showtime.price)
 
   return (
-    <div className="pb-32 md:pb-6">
+    <div className="pb-40 md:pb-6">
       {/* ── Header ── */}
       <div className="sticky top-0 z-10 bg-zinc-950/95 backdrop-blur border-b border-zinc-800 px-4 py-3 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-300">
@@ -149,7 +149,7 @@ export function SeatPickerPage() {
       </div>
 
       {/* ── Sticky bottom bar ── */}
-      <div className="fixed bottom-0 left-0 right-0 bg-zinc-900/95 backdrop-blur border-t border-zinc-800 px-4 py-3 flex items-center gap-3">
+      <div className="fixed bottom-16 md:bottom-0 left-0 right-0 bg-zinc-900/95 backdrop-blur border-t border-zinc-800 px-4 py-3 flex items-center gap-3">
         <div className="flex-1">
           {error && <p className="text-red-400 text-xs mb-1">{error}</p>}
           <p className="text-sm text-zinc-400">{selected.size} ghế đã chọn</p>
