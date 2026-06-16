@@ -41,6 +41,28 @@ public class AuthService(IUserRepository userRepo, IConfiguration config) : IAut
         return new AuthResultDto(GenerateToken(user), user.Email, user.Role.ToString());
     }
 
+    public async Task<UserProfileDto> GetProfileAsync(int userId)
+    {
+        var user = await userRepo.GetByIdAsync(userId)
+            ?? throw new KeyNotFoundException("Người dùng không tồn tại.");
+        return new UserProfileDto(user.Id, user.Email, user.Role.ToString());
+    }
+
+    public async Task ChangePasswordAsync(int userId, ChangePasswordDto dto)
+    {
+        var user = await userRepo.GetByIdAsync(userId)
+            ?? throw new KeyNotFoundException("Người dùng không tồn tại.");
+
+        if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash))
+            throw new UnauthorizedAccessException("Mật khẩu hiện tại không đúng.");
+
+        if (dto.NewPassword.Length < 6)
+            throw new ArgumentException("Mật khẩu mới phải có ít nhất 6 ký tự.");
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+        await userRepo.SaveChangesAsync();
+    }
+
     private string GenerateToken(User user)
     {
         var secret = config["Jwt:Secret"]!;

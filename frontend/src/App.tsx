@@ -10,6 +10,7 @@ import { MovieDetailPage } from './pages/MovieDetailPage'
 import { SeatPickerPage } from './pages/SeatPickerPage'
 import { MyBookingsPage } from './pages/MyBookingsPage'
 import { SearchPage } from './pages/SearchPage'
+import { ProfilePage } from './pages/ProfilePage'
 import { FamilyMovieListPage } from './features/family-booking/pages/FamilyMovieListPage'
 import { FamilyShowtimePage } from './features/family-booking/pages/FamilyShowtimePage'
 import { FamilyPackagePickerPage } from './features/family-booking/pages/FamilyPackagePickerPage'
@@ -99,6 +100,7 @@ function App() {
               <ProtectedRoute><MyBookingsPage /></ProtectedRoute>
             } />
             <Route path="/booking-success" element={<BookingSuccessPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
 
             {/* Family flow */}
             <Route path="/family" element={<FamilyLandingPage />} />
