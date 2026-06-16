@@ -2,11 +2,10 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getShowtimesByMovie, type ShowtimeDto } from '../../../api/showtimes'
 
-function formatDateTime(iso: string) {
-  return new Date(iso).toLocaleString('vi-VN', {
-    weekday: 'short', day: '2-digit', month: '2-digit',
-    hour: '2-digit', minute: '2-digit'
-  })
+const DAYS_VI = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']
+
+function formatTime(iso: string) {
+  return new Date(iso).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
 }
 function formatPrice(p: number) {
   return p.toLocaleString('vi-VN') + 'đ'
@@ -29,34 +28,64 @@ export function FamilyShowtimePage() {
       .finally(() => setLoading(false))
   }, [movieId])
 
-  if (loading) return <p className="p-4 text-lg text-gray-500">Đang tải suất chiếu...</p>
-  if (error) return <p className="p-4 text-red-600">{error}</p>
+  if (loading) return (
+    <div className="flex justify-center items-center min-h-64">
+      <div className="w-8 h-8 border-2 border-green-400 border-t-transparent rounded-full animate-spin" />
+    </div>
+  )
+  if (error) return <p className="p-6 text-red-400 text-center">{error}</p>
+
+  // Group by date
+  const byDate = showtimes.reduce<Record<string, ShowtimeDto[]>>((acc, s) => {
+    const d = new Date(s.startsAt)
+    const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+    ;(acc[key] ??= []).push(s)
+    return acc
+  }, {})
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <button onClick={() => navigate(-1)} className="text-blue-600 mb-4 flex items-center gap-1">
-        ← Quay lại
-      </button>
-      <h1 className="text-3xl font-bold mb-6">Chọn suất chiếu</h1>
+    <div className="px-4 pt-4 pb-24 md:pb-6 max-w-lg mx-auto">
+      <div className="flex items-center gap-3 mb-5">
+        <button onClick={() => navigate(-1)} className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-300">←</button>
+        <div>
+          <h1 className="text-lg font-bold text-zinc-100">Chọn suất chiếu</h1>
+          <p className="text-xs text-zinc-500">Gói gia đình · giảm giá đến 20%</p>
+        </div>
+      </div>
 
       {showtimes.length === 0 && (
-        <p className="text-gray-500">Chưa có suất chiếu cho phim này.</p>
+        <p className="text-zinc-500 text-center py-8">Chưa có suất chiếu cho phim này.</p>
       )}
 
-      <div className="flex flex-col gap-3">
-        {showtimes.map(s => (
-          <button
-            key={s.id}
-            onClick={() => navigate(`/family-booking/packages?showtimeId=${s.id}`)}
-            className="flex items-center justify-between rounded-xl border border-gray-200 p-4 text-left hover:border-blue-400 hover:bg-blue-50 transition-all"
-          >
-            <div>
-              <p className="font-semibold text-gray-900">{formatDateTime(s.startsAt)}</p>
-              <p className="text-sm text-gray-500 mt-0.5">{s.cinemaName} · {s.hallName}</p>
+      <div className="flex flex-col gap-4">
+        {Object.entries(byDate).map(([, list]) => {
+          const d = new Date(list[0].startsAt)
+          return (
+            <div key={d.toDateString()}>
+              <p className="text-xs text-zinc-500 font-semibold uppercase tracking-wider mb-2 px-1">
+                {DAYS_VI[d.getDay()]}, {d.getDate()}/{d.getMonth() + 1}
+              </p>
+              <div className="flex flex-col gap-2">
+                {list.map(s => (
+                  <button
+                    key={s.id}
+                    onClick={() => navigate(`/family/packages?showtimeId=${s.id}`)}
+                    className="flex items-center justify-between rounded-2xl bg-zinc-900 border border-zinc-800 px-4 py-3.5 text-left active:scale-[0.98] transition-all"
+                  >
+                    <div>
+                      <p className="font-bold text-zinc-100 text-base">{formatTime(s.startsAt)}</p>
+                      <p className="text-xs text-zinc-500 mt-0.5">{s.cinemaName} · {s.hallName}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-400 font-semibold text-sm">{formatPrice(Number(s.price))}</span>
+                      <span className="text-zinc-600">›</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
-            <span className="text-blue-600 font-bold">{formatPrice(Number(s.price))}</span>
-          </button>
-        ))}
+          )
+        })}
       </div>
     </div>
   )

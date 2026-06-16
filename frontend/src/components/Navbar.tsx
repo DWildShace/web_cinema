@@ -1,41 +1,35 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
+import { useNavigate } from 'react-router-dom'
 
 export function Navbar() {
   const { isAuthenticated, email, clearAuth } = useAuthStore()
   const navigate = useNavigate()
 
-  const handleLogout = () => {
-    clearAuth()
-    navigate('/')
-  }
-
   return (
-    <nav className="bg-gray-900 text-white px-4 py-3 flex items-center justify-between shadow-md">
-      <Link to="/" className="text-xl font-bold tracking-tight hover:text-blue-400 transition-colors">
+    <nav className="hidden md:flex sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800 px-6 py-3 items-center justify-between">
+      <Link to="/" className="text-lg font-bold tracking-tight text-zinc-100 hover:text-green-400 transition-colors">
         🎬 CinemaBooking
       </Link>
 
-      <div className="flex items-center gap-4 text-sm">
-        <Link to="/movies" className="hover:text-blue-400 transition-colors">Phim</Link>
+      <div className="flex items-center gap-6 text-sm text-zinc-400">
+        <Link to="/movies" className="hover:text-zinc-100 transition-colors">Phim</Link>
+        <Link to="/family" className="hover:text-zinc-100 transition-colors">Gia đình</Link>
         {isAuthenticated ? (
           <>
-            <Link to="/my-bookings" className="hover:text-blue-400 transition-colors">Vé của tôi</Link>
-            <span className="text-gray-400 hidden sm:inline">{email}</span>
+            <Link to="/my-tickets" className="hover:text-zinc-100 transition-colors">Vé của tôi</Link>
+            <span className="text-zinc-600 hidden lg:inline">{email}</span>
             <button
-              onClick={handleLogout}
-              className="px-3 py-1 rounded bg-red-600 hover:bg-red-700 transition-colors"
+              onClick={() => { clearAuth(); navigate('/') }}
+              className="text-zinc-400 hover:text-red-400 transition-colors"
             >
               Đăng xuất
             </button>
           </>
         ) : (
           <>
-            <Link to="/login" className="hover:text-blue-400 transition-colors">Đăng nhập</Link>
-            <Link
-              to="/register"
-              className="px-3 py-1 rounded bg-blue-600 hover:bg-blue-700 transition-colors"
-            >
+            <Link to="/login" className="hover:text-zinc-100 transition-colors">Đăng nhập</Link>
+            <Link to="/register" className="px-4 py-1.5 rounded-full bg-green-500 text-zinc-950 font-semibold hover:bg-green-400 transition-colors text-xs">
               Đăng ký
             </Link>
           </>

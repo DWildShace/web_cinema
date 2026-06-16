@@ -3,11 +3,11 @@ import { Link } from 'react-router-dom'
 import { getAllMovies, type MovieDto } from '../api/movies'
 
 const AGE_COLORS: Record<string, string> = {
-  P:   'bg-green-100 text-green-800',
-  K:   'bg-blue-100 text-blue-800',
-  T13: 'bg-yellow-100 text-yellow-800',
-  T16: 'bg-orange-100 text-orange-800',
-  T18: 'bg-red-100 text-red-800',
+  P:   'bg-green-500/20 text-green-400',
+  K:   'bg-blue-500/20 text-blue-400',
+  T13: 'bg-yellow-500/20 text-yellow-400',
+  T16: 'bg-orange-500/20 text-orange-400',
+  T18: 'bg-red-500/20 text-red-400',
 }
 
 export function MovieListPage() {
@@ -18,50 +18,50 @@ export function MovieListPage() {
   useEffect(() => {
     getAllMovies()
       .then(setMovies)
-      .catch(() => setError('Không thể tải danh sách phim. Vui lòng thử lại.'))
+      .catch(() => setError('Không thể tải danh sách phim.'))
       .finally(() => setLoading(false))
   }, [])
 
   if (loading) return (
     <div className="flex justify-center items-center min-h-64">
-      <p className="text-gray-500 text-lg">Đang tải phim...</p>
+      <div className="w-8 h-8 border-2 border-green-400 border-t-transparent rounded-full animate-spin" />
     </div>
   )
-  if (error) return <p className="p-4 text-red-600 text-center">{error}</p>
+  if (error) return <p className="p-6 text-red-400 text-center">{error}</p>
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Đang chiếu</h1>
+    <div className="px-4 pt-4 pb-24 md:pb-6 max-w-4xl mx-auto">
+      <h1 className="text-xl font-bold text-zinc-100 mb-4">Đang chiếu</h1>
 
-      {movies.length === 0 && (
-        <p className="text-gray-500 text-center py-12">Chưa có phim nào.</p>
-      )}
-
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
         {movies.map(m => (
           <Link
             key={m.id}
             to={`/movies/${m.id}`}
-            className="group flex flex-col rounded-xl overflow-hidden border border-gray-200 hover:border-blue-400 hover:shadow-lg transition-all"
+            className="group"
           >
-            <div className="relative aspect-[2/3] bg-gray-100">
+            <div className="relative rounded-2xl overflow-hidden aspect-[2/3] bg-zinc-800">
               <img
-                src={m.posterUrl || 'https://placehold.co/300x450?text=No+Image'}
+                src={m.posterUrl || 'https://placehold.co/300x450/27272a/4ade80?text=?'}
                 alt={m.title}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                className="w-full h-full object-cover group-active:scale-95 transition-transform duration-200"
               />
-              <span className={`absolute top-2 left-2 text-xs font-bold px-2 py-0.5 rounded ${AGE_COLORS[m.ageRating] ?? 'bg-gray-100 text-gray-700'}`}>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+              <span className={`absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full ${AGE_COLORS[m.ageRating] ?? 'bg-zinc-700 text-zinc-300'}`}>
                 {m.ageRating}
               </span>
-            </div>
-            <div className="p-2">
-              <h2 className="font-semibold text-sm text-gray-900 line-clamp-2 leading-tight">{m.title}</h2>
-              <p className="text-xs text-gray-500 mt-1">{m.genre} · {m.duration} phút</p>
-              <p className="text-xs text-yellow-500 mt-0.5">★ {m.rating}</p>
+              <div className="absolute bottom-0 left-0 right-0 p-2">
+                <p className="text-white text-xs font-semibold line-clamp-2 leading-tight">{m.title}</p>
+                <p className="text-yellow-400 text-[10px] mt-0.5">★ {m.rating} · {m.duration}p</p>
+              </div>
             </div>
           </Link>
         ))}
       </div>
+
+      {movies.length === 0 && (
+        <p className="text-zinc-500 text-center py-16">Chưa có phim nào.</p>
+      )}
     </div>
   )
 }
