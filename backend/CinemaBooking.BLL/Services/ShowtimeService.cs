@@ -7,6 +7,12 @@ namespace CinemaBooking.BLL.Services;
 
 public class ShowtimeService(IShowtimeRepository showtimeRepo, ISeatRepository seatRepo) : IShowtimeService
 {
+    public async Task<IEnumerable<ShowtimeDto>> GetAllAsync()
+    {
+        var showtimes = await showtimeRepo.GetAllWithDetailsAsync();
+        return showtimes.Select(ToDto);
+    }
+
     public async Task<IEnumerable<ShowtimeDto>> GetByMovieIdAsync(int movieId)
     {
         var showtimes = await showtimeRepo.GetByMovieIdAsync(movieId);

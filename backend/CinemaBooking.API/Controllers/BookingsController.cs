@@ -30,6 +30,14 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
         return Ok(booking);
     }
 
+    [HttpGet("by-code/{code}")]
+    [Authorize(Roles = "CinemaStaff,CinemaManager,SysAdmin,Admin")]
+    public async Task<IActionResult> GetByCode(string code)
+    {
+        var booking = await bookingService.GetByTicketCodeAsync(code);
+        return booking is null ? NotFound(new { error = "Không tìm thấy vé." }) : Ok(booking);
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create(CreateBookingDto dto)
     {

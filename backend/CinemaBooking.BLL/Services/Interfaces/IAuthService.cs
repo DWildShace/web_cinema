@@ -8,4 +8,6 @@ public interface IAuthService
     Task<AuthResultDto> LoginAsync(LoginDto dto);
     Task<UserProfileDto> GetProfileAsync(int userId);
     Task ChangePasswordAsync(int userId, ChangePasswordDto dto);
+    Task<IEnumerable<UserListItemDto>> GetAllUsersAsync();
+    Task ChangeUserRoleAsync(int targetUserId, ChangeRoleDto dto);
 }

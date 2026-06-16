@@ -20,12 +20,12 @@ public class MoviesController(IMovieService movieService) : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,CinemaManager,SysAdmin")]
     public async Task<IActionResult> Create(CreateMovieDto dto) =>
         CreatedAtAction(nameof(GetById), new { id = 0 }, await movieService.CreateAsync(dto));
 
     [HttpPut("{id:int}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,CinemaManager,SysAdmin")]
     public async Task<IActionResult> Update(int id, UpdateMovieDto dto)
     {
         var result = await movieService.UpdateAsync(id, dto);
@@ -33,7 +33,7 @@ public class MoviesController(IMovieService movieService) : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,CinemaManager,SysAdmin")]
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await movieService.DeleteAsync(id);

@@ -59,6 +59,14 @@ public class BookingService(
         return ToDto(full!);
     }
 
+    public async Task<BookingDto?> GetByTicketCodeAsync(string ticketCode)
+    {
+        var booking = await bookingRepo.GetByTicketCodeAsync(ticketCode);
+        if (booking is null) return null;
+        var full = await bookingRepo.GetWithSeatsAsync(booking.Id);
+        return full is null ? null : ToDto(full);
+    }
+
     private static BookingDto ToDto(Booking b) => new(
         b.Id,
         b.TicketCode,

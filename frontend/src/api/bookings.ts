@@ -30,3 +30,6 @@ export const getBookingById = (id: number) =>
 
 export const createBooking = (dto: CreateBookingDto) =>
   api.post<BookingDto>('/api/bookings', dto).then(r => r.data)
+
+export const getBookingByCode = (code: string) =>
+  api.get<BookingDto>(`/api/bookings/by-code/${code}`).then(r => r.data)

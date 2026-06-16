@@ -1,3 +1,4 @@
+using CinemaBooking.API.Services;
 using CinemaBooking.BLL.DTOs;
 using CinemaBooking.BLL.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -6,7 +7,7 @@ namespace CinemaBooking.API.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController(IAuthService authService) : ControllerBase
+public class AuthController(IAuthService authService, LoginRateLimiter rateLimiter) : ControllerBase
 {
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDto dto)
@@ -21,10 +22,25 @@ public class AuthController(IAuthService authService) : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginDto dto)
     {
+        var email = dto.Email?.Trim() ?? string.Empty;
+
+        var remaining = rateLimiter.LockRemainingTime(email);
+        if (remaining is not null)
+        {
+            var minutes = (int)Math.Ceiling(remaining.Value.TotalMinutes);
+            return StatusCode(429, new { error = $"Tài khoản tạm khóa do quá nhiều lần thử sai. Vui lòng thử lại sau {minutes} phút." });
+        }
+
         try
         {
-            return Ok(await authService.LoginAsync(dto));
+            var result = await authService.LoginAsync(dto);
+            rateLimiter.Reset(email);
+            return Ok(result);
         }
-        catch (UnauthorizedAccessException ex) { return Unauthorized(new { error = ex.Message }); }
+        catch (UnauthorizedAccessException ex)
+        {
+            rateLimiter.RecordFailure(email);
+            return Unauthorized(new { error = ex.Message });
+        }
     }
 }

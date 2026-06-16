@@ -27,3 +27,19 @@ export const getShowtimeById = (id: number) =>
 
 export const getSeatsByShowtime = (id: number) =>
   api.get<SeatWithStatusDto[]>(`/api/showtimes/${id}/seats`).then(r => r.data)
+
+export interface CreateShowtimeDto {
+  movieId: number
+  hallId: number
+  startsAt: string
+  price: number
+}
+
+export const getAllShowtimes = () =>
+  api.get<ShowtimeDto[]>('/api/showtimes').then(r => r.data)
+
+export const createShowtime = (dto: CreateShowtimeDto) =>
+  api.post<ShowtimeDto>('/api/showtimes', dto).then(r => r.data)
+
+export const deleteShowtime = (id: number) =>
+  api.delete(`/api/showtimes/${id}`)

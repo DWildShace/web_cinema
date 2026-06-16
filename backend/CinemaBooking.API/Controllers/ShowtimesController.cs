@@ -8,6 +8,11 @@ namespace CinemaBooking.API.Controllers;
 [ApiController]
 public class ShowtimesController(IShowtimeService showtimeService) : ControllerBase
 {
+    [HttpGet("api/showtimes")]
+    [Authorize(Roles = "Admin,CinemaManager,SysAdmin")]
+    public async Task<IActionResult> GetAll() =>
+        Ok(await showtimeService.GetAllAsync());
+
     [HttpGet("api/movies/{movieId:int}/showtimes")]
     public async Task<IActionResult> GetByMovie(int movieId) =>
         Ok(await showtimeService.GetByMovieIdAsync(movieId));
@@ -30,7 +35,7 @@ public class ShowtimesController(IShowtimeService showtimeService) : ControllerB
     }
 
     [HttpPost("api/showtimes")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,CinemaManager,SysAdmin")]
     public async Task<IActionResult> Create(CreateShowtimeDto dto)
     {
         var showtime = await showtimeService.CreateAsync(dto);
@@ -38,7 +43,7 @@ public class ShowtimesController(IShowtimeService showtimeService) : ControllerB
     }
 
     [HttpDelete("api/showtimes/{id:int}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,CinemaManager,SysAdmin")]
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await showtimeService.DeleteAsync(id);

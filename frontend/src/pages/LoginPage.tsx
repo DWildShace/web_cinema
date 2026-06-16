@@ -21,9 +21,12 @@ export function LoginPage() {
       setAuth(result.token, result.email, result.role)
       navigate('/')
     } catch (err) {
-      if (axios.isAxiosError(err) && err.response?.status === 401)
-        setError(err.response.data?.error ?? 'Email hoặc mật khẩu không đúng.')
-      else setError('Đăng nhập thất bại. Vui lòng thử lại.')
+      if (axios.isAxiosError(err)) {
+        const status = err.response?.status
+        if (status === 401 || status === 429)
+          setError(err.response?.data?.error ?? 'Email hoặc mật khẩu không đúng.')
+        else setError('Đăng nhập thất bại. Vui lòng thử lại.')
+      } else setError('Đăng nhập thất bại. Vui lòng thử lại.')
     } finally {
       setLoading(false)
     }
@@ -70,10 +73,15 @@ export function LoginPage() {
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-zinc-500">
-          Chưa có tài khoản?{' '}
-          <Link to="/register" className="text-green-400 font-semibold">Đăng ký ngay</Link>
-        </p>
+        <div className="mt-6 flex flex-col items-center gap-2">
+          <Link to="/forgot-password" className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
+            Quên mật khẩu?
+          </Link>
+          <p className="text-sm text-zinc-500">
+            Chưa có tài khoản?{' '}
+            <Link to="/register" className="text-green-400 font-semibold">Đăng ký ngay</Link>
+          </p>
+        </div>
       </div>
     </div>
   )

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { QRCodeSVG } from 'qrcode.react'
 import { getMyBookings, type BookingDto } from '../api/bookings'
 
 function formatDateTime(iso: string) {
@@ -9,60 +10,55 @@ function formatDateTime(iso: string) {
 
 function TicketCard({ booking }: { booking: BookingDto }) {
   return (
-    <div className="bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800">
-      {/* Header */}
-      <div className="px-5 pt-5 pb-4">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <p className="font-bold text-zinc-100 text-base leading-tight">{booking.movieTitle}</p>
-            <p className="text-zinc-500 text-sm mt-1">{formatDateTime(booking.startsAt)}</p>
+    <Link to={`/my-tickets/${booking.id}`} className="block">
+      <div className="bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800 active:scale-[0.98] transition-transform">
+        {/* Header */}
+        <div className="px-5 pt-5 pb-4">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-zinc-100 text-base leading-tight">{booking.movieTitle}</p>
+              <p className="text-zinc-500 text-sm mt-1">{formatDateTime(booking.startsAt)}</p>
+            </div>
+            <span className="text-zinc-500 text-lg">›</span>
           </div>
-          <span className="text-[10px] font-mono bg-zinc-800 text-green-400 border border-zinc-700 px-2.5 py-1 rounded-lg whitespace-nowrap">
-            {booking.ticketCode}
-          </span>
+
+          {/* Seats */}
+          <div className="flex flex-wrap gap-2 mt-3">
+            {booking.seats.map(s => (
+              <span
+                key={s.seatId}
+                className={`text-xs px-2.5 py-1 rounded-full font-medium border ${
+                  s.seatType === 'VIP'
+                    ? 'bg-yellow-500/10 text-yellow-400 border-yellow-800'
+                    : 'bg-zinc-800 text-zinc-300 border-zinc-700'
+                }`}
+              >
+                {String.fromCharCode(64 + s.row)}{s.column}
+              </span>
+            ))}
+          </div>
         </div>
 
-        {/* Seats */}
-        <div className="flex flex-wrap gap-2 mt-3">
-          {booking.seats.map(s => (
-            <span
-              key={s.seatId}
-              className={`text-xs px-2.5 py-1 rounded-full font-medium border ${
-                s.seatType === 'VIP'
-                  ? 'bg-yellow-500/10 text-yellow-400 border-yellow-800'
-                  : 'bg-zinc-800 text-zinc-300 border-zinc-700'
-              }`}
-            >
-              {String.fromCharCode(64 + s.row)}{s.column}
-            </span>
-          ))}
+        {/* Divider with notches */}
+        <div className="relative flex items-center">
+          <div className="w-4 h-4 rounded-full bg-zinc-950 -ml-2 flex-shrink-0" />
+          <div className="flex-1 border-t-2 border-dashed border-zinc-800" />
+          <div className="w-4 h-4 rounded-full bg-zinc-950 -mr-2 flex-shrink-0" />
+        </div>
+
+        {/* QR preview */}
+        <div className="px-5 py-4 flex items-center justify-between gap-4">
+          <div className="p-2 bg-white rounded-xl">
+            <QRCodeSVG value={booking.ticketCode} size={64} level="M" includeMargin={false} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] text-zinc-500 mb-0.5">Mã vé</p>
+            <p className="font-mono font-bold text-green-400 text-sm tracking-widest truncate">{booking.ticketCode}</p>
+            <p className="text-xs text-zinc-600 mt-1">Nhấn để xem QR đầy đủ →</p>
+          </div>
         </div>
       </div>
-
-      {/* Divider with notches */}
-      <div className="relative flex items-center">
-        <div className="w-4 h-4 rounded-full bg-zinc-950 -ml-2 flex-shrink-0" />
-        <div className="flex-1 border-t-2 border-dashed border-zinc-800" />
-        <div className="w-4 h-4 rounded-full bg-zinc-950 -mr-2 flex-shrink-0" />
-      </div>
-
-      {/* Barcode area */}
-      <div className="px-5 py-4 flex items-center justify-center">
-        <div className="flex gap-px">
-          {Array.from({ length: 40 }, (_, i) => (
-            <div
-              key={i}
-              className="bg-zinc-300"
-              style={{
-                width: Math.random() > 0.5 ? 2 : 1,
-                height: i % 7 === 0 ? 36 : 28,
-                opacity: 0.6 + Math.random() * 0.4
-              }}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
+    </Link>
   )
 }
 

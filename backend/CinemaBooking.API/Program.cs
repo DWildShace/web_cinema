@@ -1,6 +1,7 @@
 using System.Text;
 using CinemaBooking.API;
 using CinemaBooking.API.BackgroundServices;
+using CinemaBooking.API.Services;
 using CinemaBooking.BLL.Services;
 using CinemaBooking.BLL.Services.Interfaces;
 using CinemaBooking.DAL;
@@ -61,6 +62,9 @@ builder.Services.AddScoped<IBookingService, BookingService>();
 
 // Background service
 builder.Services.AddHostedService<SeatExpiryService>();
+
+// Rate limiting
+builder.Services.AddSingleton<LoginRateLimiter>();
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();

@@ -56,7 +56,7 @@ export function SeatPickerPage() {
     setError(null)
     try {
       const result = await createBooking({ showtimeId, seatIds: [...selected] })
-      navigate(`/booking-success?ticketCode=${result.ticketCode}`)
+      navigate(`/booking-success?ticketCode=${result.ticketCode}&bookingId=${result.id}`)
     } catch (err) {
       setError(axios.isAxiosError(err) ? (err.response?.data?.error ?? 'Đặt vé thất bại.') : 'Đặt vé thất bại.')
     } finally {

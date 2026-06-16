@@ -100,7 +100,7 @@ export function FamilyConfirmPage() {
         familyPackageId: packageId,
         seatIds: [...selected],
       })
-      navigate(`/booking-success?ticketCode=${result.ticketCode}`)
+      navigate(`/booking-success?ticketCode=${result.ticketCode}&bookingId=${result.id}`)
     } catch (err) {
       if (axios.isAxiosError(err)) {
         if (err.response?.status === 409) {

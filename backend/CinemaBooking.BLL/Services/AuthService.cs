@@ -63,6 +63,24 @@ public class AuthService(IUserRepository userRepo, IConfiguration config) : IAut
         await userRepo.SaveChangesAsync();
     }
 
+    public async Task<IEnumerable<UserListItemDto>> GetAllUsersAsync()
+    {
+        var users = await userRepo.GetAllAsync();
+        return users.Select(u => new UserListItemDto(u.Id, u.Email, u.Role.ToString()));
+    }
+
+    public async Task ChangeUserRoleAsync(int targetUserId, ChangeRoleDto dto)
+    {
+        var user = await userRepo.GetByIdAsync(targetUserId)
+            ?? throw new KeyNotFoundException("Người dùng không tồn tại.");
+
+        if (!Enum.TryParse<UserRole>(dto.Role, ignoreCase: true, out var newRole))
+            throw new ArgumentException($"Role không hợp lệ: {dto.Role}");
+
+        user.Role = newRole;
+        await userRepo.SaveChangesAsync();
+    }
+
     private string GenerateToken(User user)
     {
         var secret = config["Jwt:Secret"]!;
