@@ -9,6 +9,7 @@ import { MovieListPage } from './pages/MovieListPage'
 import { MovieDetailPage } from './pages/MovieDetailPage'
 import { SeatPickerPage } from './pages/SeatPickerPage'
 import { MyBookingsPage } from './pages/MyBookingsPage'
+import { SearchPage } from './pages/SearchPage'
 import { FamilyMovieListPage } from './features/family-booking/pages/FamilyMovieListPage'
 import { FamilyShowtimePage } from './features/family-booking/pages/FamilyShowtimePage'
 import { FamilyPackagePickerPage } from './features/family-booking/pages/FamilyPackagePickerPage'
@@ -84,6 +85,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/search" element={<SearchPage />} />
             <Route path="/movies" element={<MovieListPage />} />
             <Route path="/movies/:id" element={<MovieDetailPage />} />
             <Route path="/seat-picker" element={

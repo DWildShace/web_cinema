@@ -15,13 +15,13 @@ export function BottomNav() {
         <span>Trang chủ</span>
       </NavLink>
 
-      <NavLink to="/movies" className={({ isActive }) =>
+      <NavLink to="/search" className={({ isActive }) =>
         `flex flex-col items-center gap-0.5 px-4 py-1 rounded-xl text-xs ${isActive ? 'text-green-400' : 'text-zinc-500'}`
       }>
         <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h1.5C5.496 19.5 6 18.996 6 18.375m-3.75.125V6.75A2.25 2.25 0 014.5 4.5h15a2.25 2.25 0 012.25 2.25v12m-18 0V6.75m18 12.75a1.125 1.125 0 001.125-1.125M21.375 19.5h-1.5a1.125 1.125 0 01-1.125-1.125m0 0V6.75" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
         </svg>
-        <span>Phim</span>
+        <span>Tìm kiếm</span>
       </NavLink>
 
       {isAuthenticated ? (
