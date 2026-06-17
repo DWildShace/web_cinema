@@ -97,8 +97,11 @@ public static class DbInitializer
         {
             var users = new List<User>
             {
-                new() { Email = "admin@cinema.vn", PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),  Role = UserRole.Admin },
-                new() { Email = "user@cinema.vn",  PasswordHash = BCrypt.Net.BCrypt.HashPassword("User@123"),   Role = UserRole.Customer },
+                new() { Email = "admin@cinema.vn",   PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),   Role = UserRole.Admin },
+                new() { Email = "user@cinema.vn",    PasswordHash = BCrypt.Net.BCrypt.HashPassword("User@123"),    Role = UserRole.Customer },
+                new() { Email = "manager@cinema.vn", PasswordHash = BCrypt.Net.BCrypt.HashPassword("Manager@123"), Role = UserRole.CinemaManager },
+                new() { Email = "staff@cinema.vn",   PasswordHash = BCrypt.Net.BCrypt.HashPassword("Staff@123"),   Role = UserRole.CinemaStaff },
+                new() { Email = "sysadmin@cinema.vn",PasswordHash = BCrypt.Net.BCrypt.HashPassword("Sysadmin@123"),Role = UserRole.SysAdmin },
             };
             await db.Users.AddRangeAsync(users);
             await db.SaveChangesAsync();

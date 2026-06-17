@@ -4,8 +4,6 @@ import { getAllShowtimes, createShowtime, deleteShowtime, type ShowtimeDto } fro
 import { getAllMovies, type MovieDto } from '../../api/movies'
 import { getAllHalls, type HallDto } from '../../api/halls'
 
-const ROW_LABEL = (r: number) => String.fromCharCode(64 + r)
-
 function formatDT(iso: string) {
   const d = new Date(iso)
   return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()} ${d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`
