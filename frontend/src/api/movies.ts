@@ -8,6 +8,7 @@ export interface MovieDto {
   posterUrl: string
   rating: number
   ageRating: string
+  description: string
 }
 
 export interface CreateMovieDto {
@@ -16,7 +17,7 @@ export interface CreateMovieDto {
   duration: number
   posterUrl: string
   rating: number
-  ageRating: string
+  description?: string
 }
 
 export const getAllMovies = () =>

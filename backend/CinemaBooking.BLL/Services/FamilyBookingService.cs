@@ -108,7 +108,11 @@ public class FamilyBookingService(
                 full.TicketCode,
                 full.ShowtimeId,
                 full.Showtime?.Movie?.Title ?? string.Empty,
+                full.Showtime?.Hall?.Name ?? string.Empty,
+                full.Showtime?.Hall?.Cinema?.Name ?? string.Empty,
                 full.Showtime?.StartsAt ?? DateTime.MinValue,
+                full.Showtime?.Price ?? 0,
+                full.Status.ToString(),
                 full.BookingSeats.Select(bs => new BookingSeatDto(
                     bs.SeatId, bs.Seat?.Row ?? 0, bs.Seat?.Column ?? 0,
                     bs.Seat?.Type.ToString() ?? string.Empty,

@@ -1,13 +1,24 @@
 import { useEffect, useRef, useState } from 'react'
 import { Html5Qrcode } from 'html5-qrcode'
 import axios from 'axios'
-import { getBookingByCode, type BookingDto } from '../../api/bookings'
+import { getBookingByCode, checkInBooking, type BookingDto } from '../../api/bookings'
 
 const ROW_LABEL = (r: number) => String.fromCharCode(64 + r)
 
 function formatDateTime(iso: string) {
   const d = new Date(iso)
   return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()} · ${d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`
+}
+
+const STATUS_COLOR: Record<string, string> = {
+  Confirmed:  'text-green-400',
+  CheckedIn:  'text-blue-400',
+  Cancelled:  'text-zinc-500',
+}
+const STATUS_LABEL: Record<string, string> = {
+  Confirmed: 'Chưa vào rạp',
+  CheckedIn: 'Đã check-in',
+  Cancelled: 'Đã huỷ',
 }
 
 export function ManageScanPage() {
@@ -17,6 +28,7 @@ export function ManageScanPage() {
   const [booking, setBooking] = useState<BookingDto | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [checkingIn, setCheckingIn] = useState(false)
   const [lastCode, setLastCode] = useState<string | null>(null)
 
   const lookup = async (code: string) => {
@@ -72,6 +84,23 @@ export function ManageScanPage() {
     lookup(manualCode)
   }
 
+  const handleCheckIn = async () => {
+    if (!booking) return
+    setCheckingIn(true)
+    try {
+      const updated = await checkInBooking(booking.id)
+      setBooking(updated)
+    } catch (err) {
+      if (axios.isAxiosError(err))
+        setError(err.response?.data?.error ?? 'Không thể check-in.')
+      else setError('Lỗi kết nối.')
+    } finally {
+      setCheckingIn(false)
+    }
+  }
+
+  const resetScan = () => { setBooking(null); setLastCode(null); setManualCode('') }
+
   return (
     <div className="px-4 pt-4 pb-24 md:pb-6 max-w-lg mx-auto">
       <h1 className="font-bold text-zinc-100 text-lg mb-6">Soát vé QR</h1>
@@ -117,13 +146,14 @@ export function ManageScanPage() {
         </form>
       </div>
 
-      {/* Result */}
+      {/* Loading */}
       {loading && (
         <div className="flex justify-center py-8">
           <div className="w-8 h-8 border-2 border-green-400 border-t-transparent rounded-full animate-spin" />
         </div>
       )}
 
+      {/* Error */}
       {error && (
         <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-center">
           <p className="text-4xl mb-2">❌</p>
@@ -131,14 +161,36 @@ export function ManageScanPage() {
         </div>
       )}
 
+      {/* Booking result */}
       {booking && (
-        <div className="bg-zinc-900 rounded-2xl border border-green-500/30 p-4">
+        <div className={`bg-zinc-900 rounded-2xl border p-4 ${
+          booking.status === 'CheckedIn' ? 'border-blue-500/30' :
+          booking.status === 'Cancelled' ? 'border-red-500/20' :
+          'border-green-500/30'
+        }`}>
+          {/* Status header */}
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-full bg-green-500/20 border border-green-500/30 flex items-center justify-center text-lg">✅</div>
-            <p className="font-bold text-green-400">Vé hợp lệ</p>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-lg ${
+              booking.status === 'CheckedIn' ? 'bg-blue-500/20 border border-blue-500/30' :
+              booking.status === 'Cancelled' ? 'bg-red-500/10 border border-red-500/20' :
+              'bg-green-500/20 border border-green-500/30'
+            }`}>
+              {booking.status === 'CheckedIn' ? '✅' : booking.status === 'Cancelled' ? '🚫' : '🎟'}
+            </div>
+            <div>
+              <p className={`font-bold text-sm ${STATUS_COLOR[booking.status] ?? 'text-zinc-400'}`}>
+                {STATUS_LABEL[booking.status] ?? booking.status}
+              </p>
+              <p className="font-mono text-[10px] text-zinc-600">{booking.ticketCode}</p>
+            </div>
           </div>
+
+          {/* Movie info */}
           <p className="font-bold text-zinc-100 text-base">{booking.movieTitle}</p>
-          <p className="text-zinc-500 text-sm mt-1">{formatDateTime(booking.startsAt)}</p>
+          <p className="text-zinc-400 text-sm">{booking.cinemaName} · {booking.hallName}</p>
+          <p className="text-zinc-500 text-sm mt-0.5">{formatDateTime(booking.startsAt)}</p>
+
+          {/* Seats */}
           <div className="flex flex-wrap gap-2 mt-3">
             {booking.seats.map(s => (
               <span
@@ -153,15 +205,30 @@ export function ManageScanPage() {
               </span>
             ))}
           </div>
-          <div className="mt-3 px-3 py-2 rounded-xl bg-zinc-800 inline-block">
-            <p className="font-mono font-bold text-green-400 text-sm tracking-widest">{booking.ticketCode}</p>
+
+          {/* Action buttons */}
+          <div className="mt-4 flex flex-col gap-2">
+            {booking.status === 'Confirmed' && (
+              <button
+                onClick={handleCheckIn}
+                disabled={checkingIn}
+                className="w-full py-3 rounded-xl bg-green-500 text-zinc-950 font-bold text-sm disabled:opacity-50"
+              >
+                {checkingIn ? 'Đang check-in...' : '✓ Check-in — cho vào rạp'}
+              </button>
+            )}
+            {booking.status === 'Cancelled' && (
+              <div className="py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-center">
+                <p className="text-red-400 text-sm font-semibold">Vé đã bị huỷ — không hợp lệ</p>
+              </div>
+            )}
+            <button
+              onClick={resetScan}
+              className="w-full py-2.5 rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-400 text-sm font-semibold"
+            >
+              Soát vé tiếp theo
+            </button>
           </div>
-          <button
-            onClick={() => { setBooking(null); setLastCode(null); setManualCode('') }}
-            className="w-full mt-4 py-2.5 rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-400 text-sm font-semibold"
-          >
-            Soát vé tiếp theo
-          </button>
         </div>
       )}
     </div>

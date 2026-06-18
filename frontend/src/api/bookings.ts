@@ -13,7 +13,11 @@ export interface BookingDto {
   ticketCode: string
   showtimeId: number
   movieTitle: string
+  hallName: string
+  cinemaName: string
   startsAt: string
+  price: number
+  status: string  // Confirmed | CheckedIn | Cancelled
   seats: BookingSeatDto[]
 }
 
@@ -33,3 +37,9 @@ export const createBooking = (dto: CreateBookingDto) =>
 
 export const getBookingByCode = (code: string) =>
   api.get<BookingDto>(`/api/bookings/by-code/${code}`).then(r => r.data)
+
+export const cancelBooking = (id: number) =>
+  api.delete(`/api/bookings/${id}`)
+
+export const checkInBooking = (id: number) =>
+  api.post<BookingDto>(`/api/bookings/${id}/checkin`).then(r => r.data)

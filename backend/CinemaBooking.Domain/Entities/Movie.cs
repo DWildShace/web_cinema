@@ -11,6 +11,7 @@ public class Movie
     public string PosterUrl { get; set; } = string.Empty;
     public double Rating { get; set; }
     public AgeRating AgeRating { get; set; } = AgeRating.P;
+    public string Description { get; set; } = string.Empty;
 
     public ICollection<Showtime> Showtimes { get; set; } = [];
 }

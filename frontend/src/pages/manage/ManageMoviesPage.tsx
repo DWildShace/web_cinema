@@ -3,10 +3,8 @@ import axios from 'axios'
 import { getAllMovies, createMovie, deleteMovie, type MovieDto, type CreateMovieDto } from '../../api/movies'
 
 const EMPTY_FORM: CreateMovieDto = {
-  title: '', genre: '', duration: 120, posterUrl: '', rating: 7.0, ageRating: 'P',
+  title: '', genre: '', duration: 120, posterUrl: '', rating: 7.0, description: '',
 }
-
-const AGE_RATINGS = ['P', 'K', 'T13', 'T16', 'T18', 'C']
 
 export function ManageMoviesPage() {
   const [movies, setMovies] = useState<MovieDto[]>([])
@@ -69,22 +67,32 @@ export function ManageMoviesPage() {
             <div className="px-3 py-2 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs">{error}</div>
           )}
           {([
-            { key: 'title', label: 'Tên phim', type: 'text', required: true },
-            { key: 'genre', label: 'Thể loại', type: 'text', required: true },
-            { key: 'posterUrl', label: 'URL poster', type: 'url', required: false },
+            { key: 'title',     label: 'Tên phim',  type: 'text', required: true },
+            { key: 'genre',     label: 'Thể loại',  type: 'text', required: true },
+            { key: 'posterUrl', label: 'URL poster', type: 'url',  required: false },
           ] as const).map(f => (
             <div key={f.key}>
               <label className="block text-xs text-zinc-500 mb-1">{f.label}</label>
               <input
                 type={f.type}
                 required={f.required}
-                value={form[f.key]}
+                value={form[f.key] ?? ''}
                 onChange={e => setForm(prev => ({ ...prev, [f.key]: e.target.value }))}
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-zinc-100 text-sm placeholder-zinc-600 focus:outline-none focus:border-green-500 transition-colors"
               />
             </div>
           ))}
-          <div className="grid grid-cols-3 gap-2">
+          <div>
+            <label className="block text-xs text-zinc-500 mb-1">Nội dung phim (tùy chọn)</label>
+            <textarea
+              rows={3}
+              value={form.description ?? ''}
+              onChange={e => setForm(prev => ({ ...prev, description: e.target.value }))}
+              placeholder="Mô tả ngắn về nội dung phim..."
+              className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-zinc-100 text-sm placeholder-zinc-600 focus:outline-none focus:border-green-500 transition-colors resize-none"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="block text-xs text-zinc-500 mb-1">Thời lượng (phút)</label>
               <input
@@ -100,16 +108,6 @@ export function ManageMoviesPage() {
                 onChange={e => setForm(prev => ({ ...prev, rating: Number(e.target.value) }))}
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-zinc-100 text-sm focus:outline-none focus:border-green-500 transition-colors"
               />
-            </div>
-            <div>
-              <label className="block text-xs text-zinc-500 mb-1">Giới hạn tuổi</label>
-              <select
-                value={form.ageRating}
-                onChange={e => setForm(prev => ({ ...prev, ageRating: e.target.value }))}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-zinc-100 text-sm focus:outline-none focus:border-green-500 transition-colors"
-              >
-                {AGE_RATINGS.map(r => <option key={r} value={r}>{r}</option>)}
-              </select>
             </div>
           </div>
           <button

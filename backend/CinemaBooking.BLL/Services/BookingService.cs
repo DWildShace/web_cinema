@@ -44,6 +44,7 @@ public class BookingService(
             UserId = userId,
             ShowtimeId = dto.ShowtimeId,
             TicketCode = Guid.NewGuid().ToString("N")[..12].ToUpper(),
+            Status = BookingStatus.Confirmed,
             BookingSeats = seatIds.Select(seatId => new BookingSeat
             {
                 SeatId = seatId,
@@ -67,12 +68,48 @@ public class BookingService(
         return full is null ? null : ToDto(full);
     }
 
+    public async Task<bool> CancelAsync(int userId, int bookingId)
+    {
+        var booking = await bookingRepo.GetWithSeatsAsync(bookingId);
+        if (booking is null || booking.UserId != userId) return false;
+
+        if (booking.Status == BookingStatus.CheckedIn)
+            throw new InvalidOperationException("Vé đã được check-in, không thể huỷ.");
+
+        if (booking.Status == BookingStatus.Cancelled)
+            throw new InvalidOperationException("Vé đã bị huỷ trước đó.");
+
+        booking.Status = BookingStatus.Cancelled;
+        await bookingRepo.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<BookingDto?> CheckInAsync(int bookingId)
+    {
+        var booking = await bookingRepo.GetWithSeatsAsync(bookingId);
+        if (booking is null) return null;
+
+        if (booking.Status == BookingStatus.Cancelled)
+            throw new InvalidOperationException("Vé đã bị huỷ.");
+
+        if (booking.Status == BookingStatus.CheckedIn)
+            throw new InvalidOperationException("Vé đã được check-in rồi.");
+
+        booking.Status = BookingStatus.CheckedIn;
+        await bookingRepo.SaveChangesAsync();
+        return ToDto(booking);
+    }
+
     private static BookingDto ToDto(Booking b) => new(
         b.Id,
         b.TicketCode,
         b.ShowtimeId,
         b.Showtime?.Movie?.Title ?? string.Empty,
+        b.Showtime?.Hall?.Name ?? string.Empty,
+        b.Showtime?.Hall?.Cinema?.Name ?? string.Empty,
         b.Showtime?.StartsAt ?? default,
+        b.Showtime?.Price ?? 0,
+        b.Status.ToString(),
         b.BookingSeats.Select(bs => new BookingSeatDto(
             bs.SeatId,
             bs.Seat?.Row ?? 0,

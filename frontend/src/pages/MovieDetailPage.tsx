@@ -99,6 +99,14 @@ export function MovieDetailPage() {
           </div>
         </div>
 
+        {/* ── Description ── */}
+        {movie.description && (
+          <div className="mb-4 p-4 rounded-2xl bg-zinc-900 border border-zinc-800">
+            <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">Nội dung phim</p>
+            <p className="text-zinc-300 text-sm leading-relaxed">{movie.description}</p>
+          </div>
+        )}
+
         {/* ── Date picker ── */}
         {groups.length > 0 && (
           <>

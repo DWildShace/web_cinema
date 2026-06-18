@@ -27,7 +27,8 @@ public class MovieService(IMovieRepository repo) : IMovieService
             Genre = dto.Genre,
             Duration = dto.Duration,
             PosterUrl = dto.PosterUrl,
-            Rating = dto.Rating
+            Rating = dto.Rating,
+            Description = dto.Description
         };
         await repo.AddAsync(movie);
         await repo.SaveChangesAsync();
@@ -44,6 +45,7 @@ public class MovieService(IMovieRepository repo) : IMovieService
         if (dto.Duration.HasValue) movie.Duration = dto.Duration.Value;
         if (dto.PosterUrl is not null) movie.PosterUrl = dto.PosterUrl;
         if (dto.Rating.HasValue) movie.Rating = dto.Rating.Value;
+        if (dto.Description is not null) movie.Description = dto.Description;
 
         repo.Update(movie);
         await repo.SaveChangesAsync();
@@ -60,5 +62,5 @@ public class MovieService(IMovieRepository repo) : IMovieService
     }
 
     private static MovieDto ToDto(Movie m) =>
-        new(m.Id, m.Title, m.Genre, m.Duration, m.PosterUrl, m.Rating, m.AgeRating.ToString());
+        new(m.Id, m.Title, m.Genre, m.Duration, m.PosterUrl, m.Rating, m.AgeRating.ToString(), m.Description);
 }

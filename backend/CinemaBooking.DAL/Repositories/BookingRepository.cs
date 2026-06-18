@@ -11,6 +11,7 @@ public class BookingRepository(AppDbContext context) : BaseRepository<Booking>(c
     public async Task<IEnumerable<Booking>> GetByUserIdAsync(int userId) =>
         await _dbSet.Where(b => b.UserId == userId)
             .Include(b => b.Showtime).ThenInclude(s => s.Movie)
+            .Include(b => b.Showtime).ThenInclude(s => s.Hall).ThenInclude(h => h.Cinema)
             .Include(b => b.BookingSeats).ThenInclude(bs => bs.Seat)
             .OrderByDescending(b => b.CreatedAt)
             .ToListAsync();
@@ -22,6 +23,7 @@ public class BookingRepository(AppDbContext context) : BaseRepository<Booking>(c
         await _dbSet
             .Include(b => b.BookingSeats).ThenInclude(bs => bs.Seat)
             .Include(b => b.Showtime).ThenInclude(s => s.Movie)
+            .Include(b => b.Showtime).ThenInclude(s => s.Hall).ThenInclude(h => h.Cinema)
             .FirstOrDefaultAsync(b => b.Id == id);
 
     public async Task<IEnumerable<Booking>> GetActivePendingAsync(int userId, int showtimeId, int familyPackageId) =>

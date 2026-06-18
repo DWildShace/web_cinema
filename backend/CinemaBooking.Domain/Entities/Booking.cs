@@ -1,3 +1,5 @@
+using CinemaBooking.Domain.Enums;
+
 namespace CinemaBooking.Domain.Entities;
 
 public class Booking
@@ -5,6 +7,7 @@ public class Booking
     public int Id { get; set; }
     public string TicketCode { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public BookingStatus Status { get; set; } = BookingStatus.Confirmed;
 
     public int UserId { get; set; }
     public User User { get; set; } = null!;
