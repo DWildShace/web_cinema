@@ -9,11 +9,12 @@ public static class DbInitializer
 {
     public static async Task SeedAsync(AppDbContext db, IWebHostEnvironment env, bool forceSeed = false)
     {
-        if (forceSeed)
+        if (forceSeed && env.IsDevelopment())
         {
-            // Xóa showtimes + dữ liệu phụ thuộc (BookingSeats → Bookings → Showtimes)
+            // Reset toàn bộ dữ liệu dev: xóa theo thứ tự FK
             await db.Database.ExecuteSqlRawAsync(@"
-                TRUNCATE TABLE ""BookingSeats"", ""Bookings"", ""Showtimes"" RESTART IDENTITY CASCADE
+                TRUNCATE TABLE ""BookingSeats"", ""Bookings"", ""Showtimes"", ""Users""
+                RESTART IDENTITY CASCADE
             ");
         }
 
