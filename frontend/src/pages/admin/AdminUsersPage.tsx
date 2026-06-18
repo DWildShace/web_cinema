@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { getAllUsers, changeUserRole, type UserListItemDto } from '../../api/users'
 
-const ROLES = ['Customer', 'CinemaStaff', 'CinemaManager', 'SysAdmin']
+
+const ROLES = ['Customer', 'CinemaStaff', 'CinemaManager']
 
 const ROLE_BADGE: Record<string, string> = {
   Customer: 'bg-zinc-800 text-zinc-400 border-zinc-700',
@@ -71,14 +72,18 @@ export function AdminUsersPage() {
                   {u.role}
                 </span>
               </div>
-              <select
-                value={u.role}
-                disabled={changing === u.id}
-                onChange={e => handleRoleChange(u.id, e.target.value)}
-                className="bg-zinc-800 border border-zinc-700 rounded-xl px-2 py-1.5 text-zinc-300 text-xs focus:outline-none focus:border-green-500 transition-colors disabled:opacity-40"
-              >
-                {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
-              </select>
+              {u.role === 'SysAdmin' ? (
+                <span className="text-[10px] text-zinc-600 px-2">🔒 SysAdmin</span>
+              ) : (
+                <select
+                  value={u.role}
+                  disabled={changing === u.id}
+                  onChange={e => handleRoleChange(u.id, e.target.value)}
+                  className="bg-zinc-800 border border-zinc-700 rounded-xl px-2 py-1.5 text-zinc-300 text-xs focus:outline-none focus:border-green-500 transition-colors disabled:opacity-40"
+                >
+                  {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+              )}
             </div>
           ))}
         </div>

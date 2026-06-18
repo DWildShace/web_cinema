@@ -69,13 +69,26 @@ public class AuthService(IUserRepository userRepo, IConfiguration config) : IAut
         return users.Select(u => new UserListItemDto(u.Id, u.Email, u.Role.ToString()));
     }
 
-    public async Task ChangeUserRoleAsync(int targetUserId, ChangeRoleDto dto)
+    // Roles assignable via API — SysAdmin can only be set via DB seed/migration
+    private static readonly HashSet<UserRole> AssignableRoles =
+        [UserRole.Customer, UserRole.CinemaStaff, UserRole.CinemaManager];
+
+    public async Task ChangeUserRoleAsync(int callerUserId, int targetUserId, ChangeRoleDto dto)
     {
+        if (callerUserId == targetUserId)
+            throw new ArgumentException("Không thể thay đổi role của chính mình.");
+
         var user = await userRepo.GetByIdAsync(targetUserId)
             ?? throw new KeyNotFoundException("Người dùng không tồn tại.");
 
+        if (user.Role == UserRole.SysAdmin)
+            throw new ArgumentException("Không thể thay đổi role của SysAdmin khác.");
+
         if (!Enum.TryParse<UserRole>(dto.Role, ignoreCase: true, out var newRole))
             throw new ArgumentException($"Role không hợp lệ: {dto.Role}");
+
+        if (!AssignableRoles.Contains(newRole))
+            throw new ArgumentException($"Không thể gán role '{dto.Role}' qua API.");
 
         user.Role = newRole;
         await userRepo.SaveChangesAsync();

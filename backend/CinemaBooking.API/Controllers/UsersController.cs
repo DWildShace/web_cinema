@@ -47,7 +47,7 @@ public class UsersController(IAuthService authService) : ControllerBase
     {
         try
         {
-            await authService.ChangeUserRoleAsync(id, dto);
+            await authService.ChangeUserRoleAsync(UserId, id, dto);
             return NoContent();
         }
         catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
