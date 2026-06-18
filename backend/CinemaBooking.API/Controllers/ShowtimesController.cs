@@ -13,6 +13,15 @@ public class ShowtimesController(IShowtimeService showtimeService) : ControllerB
     public async Task<IActionResult> GetAll() =>
         Ok(await showtimeService.GetAllAsync());
 
+    // Public: GET /api/showtimes/by-date?date=2026-06-18
+    [HttpGet("api/showtimes/by-date")]
+    public async Task<IActionResult> GetByDate([FromQuery] string date)
+    {
+        if (!DateOnly.TryParse(date, out var parsedDate))
+            return BadRequest(new { error = "date phai co dinh dang yyyy-MM-dd" });
+        return Ok(await showtimeService.GetByDateAsync(parsedDate));
+    }
+
     [HttpGet("api/movies/{movieId:int}/showtimes")]
     public async Task<IActionResult> GetByMovie(int movieId) =>
         Ok(await showtimeService.GetByMovieIdAsync(movieId));

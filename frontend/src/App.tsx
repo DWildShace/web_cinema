@@ -8,6 +8,7 @@ import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage'
+import { SchedulePage } from './pages/SchedulePage'
 import { MovieListPage } from './pages/MovieListPage'
 import { MovieDetailPage } from './pages/MovieDetailPage'
 import { SeatPickerPage } from './pages/SeatPickerPage'
@@ -111,6 +112,7 @@ function App() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/search" element={<SearchPage />} />
+            <Route path="/schedule" element={<SchedulePage />} />
             <Route path="/movies" element={<MovieListPage />} />
             <Route path="/movies/:id" element={<MovieDetailPage />} />
             <Route path="/seat-picker" element={

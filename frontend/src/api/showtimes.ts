@@ -38,6 +38,9 @@ export interface CreateShowtimeDto {
 export const getAllShowtimes = () =>
   api.get<ShowtimeDto[]>('/api/showtimes').then(r => r.data)
 
+export const getShowtimesByDate = (date: string) =>
+  api.get<ShowtimeDto[]>('/api/showtimes/by-date', { params: { date } }).then(r => r.data)
+
 export const createShowtime = (dto: CreateShowtimeDto) =>
   api.post<ShowtimeDto>('/api/showtimes', dto).then(r => r.data)
 

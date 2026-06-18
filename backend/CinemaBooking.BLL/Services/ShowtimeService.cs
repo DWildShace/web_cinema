@@ -13,6 +13,15 @@ public class ShowtimeService(IShowtimeRepository showtimeRepo, ISeatRepository s
         return showtimes.Select(ToDto);
     }
 
+    public async Task<IEnumerable<ShowtimeDto>> GetByDateAsync(DateOnly date)
+    {
+        var all = await showtimeRepo.GetAllWithDetailsAsync();
+        return all
+            .Where(s => DateOnly.FromDateTime(s.StartsAt.ToLocalTime()) == date)
+            .OrderBy(s => s.StartsAt)
+            .Select(ToDto);
+    }
+
     public async Task<IEnumerable<ShowtimeDto>> GetByMovieIdAsync(int movieId)
     {
         var showtimes = await showtimeRepo.GetByMovieIdAsync(movieId);
