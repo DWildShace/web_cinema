@@ -27,6 +27,8 @@ dotnet ef database update              --project CinemaBooking.DAL --startup-pro
 dotnet ef database drop                --project CinemaBooking.DAL --startup-project CinemaBooking.API  # destructive
 ```
 
+dotnet watch --project CinemaBooking.API -- --seed
+
 ## PostgreSQL (Docker)
 
 ```bash
