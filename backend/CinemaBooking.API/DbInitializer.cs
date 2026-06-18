@@ -7,8 +7,16 @@ namespace CinemaBooking.API;
 
 public static class DbInitializer
 {
-    public static async Task SeedAsync(AppDbContext db, IWebHostEnvironment env)
+    public static async Task SeedAsync(AppDbContext db, IWebHostEnvironment env, bool forceSeed = false)
     {
+        if (forceSeed)
+        {
+            // Xóa showtimes + dữ liệu phụ thuộc (BookingSeats → Bookings → Showtimes)
+            await db.Database.ExecuteSqlRawAsync(@"
+                TRUNCATE TABLE ""BookingSeats"", ""Bookings"", ""Showtimes"" RESTART IDENTITY CASCADE
+            ");
+        }
+
         var isFirstRun = !await db.Movies.AnyAsync();
 
         if (isFirstRun)
